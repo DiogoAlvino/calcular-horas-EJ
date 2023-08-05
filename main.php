@@ -9,11 +9,11 @@ if (file_exists($db)) {
     if ($fileSize === 0) { //caso a base de dados esteja vazia iremos inicializala
         $alunos = [];
         
-        echo "\n>> Vimos que esse é o seu primeiro contato com a ferramenta, sendo assim, será necessário realizar a carga do nome dos alunos!\n";
+        echo ">> Vimos que esse é o seu primeiro contato com a ferramenta, sendo assim, será necessário realizar a carga do nome dos alunos!\n";
 
         while(true){
-            $addAluno = readline(">> Digite 1 para parar: ");
-            if($addAluno == "1"){
+            $addAluno = readline(">> Digite 'parar' para sair: ");
+            if($addAluno == 'parar'){
                 break;
             }else{
                 array_push($alunos, array("nome" => $addAluno, "horasTotais" => null, "tasks" => null));
@@ -36,17 +36,42 @@ if (file_exists($db)) {
     
         if($optionSelected == 1){
             while(true){
-                $newAluno = readline("\n>> Digite o nome do novo aluno (caso queira parar basta digitar 1): ");
-                if($newAluno == 1){
+                $newAluno = readline(">> Digite o nome do novo aluno (caso queira sair basta digitar 'parar'): ");
+                if($newAluno == 'parar'){
                     break;
                 }else{
                     array_push($allAlunos['alunos'], array("nome" => $newAluno, "horasTotais" => null, "tasks" => null));
                 }
             }
             atualizaDatabase($db, json_encode($allAlunos));
-        }else{
-            break;
+        
+        }else if($optionSelected == 2){
+            infoAluno($allAlunos);
+        
+        }else if($optionSelected == 3){
+            $nomeAluno = readline(">> Para buscar informações de um aluno, digite o nome: ");
+            $infoAluno = buscaAluno($nomeAluno, $allAlunos);
+
+            if($infoAluno){
+                echo "----------------\n";
+                echo ">> Nome: ".$infoAluno['nome']."\n";
+                echo ">> Horas Totais: ".$infoAluno['horasTotais']."\n";
+                echo "----------------\n";
+            }else{
+                echo "-- ESSE ALUNO NÃO ESTÁ CADASTRADO NA BASE DE DADOS --";
+            }
+        
+        }else if($optionSelected == 4){
+            $nomeAluno = readline(">> Para adicionar uma task, digite o nome do aluno: ");
+            $nomeTask = readline(">> Nome da task: ");
+            $horas = (int)readline(">> Digite as horas para fazer a task: ");
+            $minutos = (int)readline(">> Digite os minutos para fazer a task: ");
+        
+            adicionarTask($nomeAluno, $nomeTask, $horas, $minutos, $allAlunos);
         }
+        /*}else{
+            break;
+        }*/
                 
     }
 } else {
