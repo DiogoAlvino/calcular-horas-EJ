@@ -13,16 +13,22 @@ function atualizaDatabase($database, $newJson){
 
 function printOptions(){
     echo "\n>> '1' para adicionar novos alunos\n";
-    echo ">> '2' para verificar as informações de todos os alunos\n";
-    echo ">> '3' para ver as informações de um aluno\n";
+    echo ">> '2' para visualizar as horas de todos os alunos\n";
+    echo ">> '3' para visualizar as horas de um aluno\n";
     echo ">> '4' adicionar tasks para um aluno\n";
+    echo ">> '5' para ver todas as tasks de um aluno\n";
+    echo ">> '9' para sair\n";
 }
 
 function infoAlunos($db){
     foreach($db['alunos'] as $aluno){
         echo "----------------\n";
         echo ">> Nome: ".$aluno['nome']."\n";
-        echo ">> Horas Totais: ".$aluno['horasTotais']."\n";
+        if(is_null($aluno['horasTotais'])){
+            echo ">> Horas Totais: 0\n";
+        }else{
+            echo ">> Horas Totais: ".$aluno['horasTotais']."\n";
+        }
     }
 }
 
@@ -38,33 +44,59 @@ function buscaAluno($nomeAluno, $db){
 
 function adicionarTask($nomeAluno, $nomeTask, $horas, $minutos, &$db){
     global $dirDataBase;
-
+    
     foreach ($db['alunos'] as &$aluno) {
         if ($aluno['nome'] === $nomeAluno) {
-            if (!isset($aluno['tasks'])) {
-                $aluno['tasks'] = [];
-            }
-            
-            $taskExists = false;
-            foreach ($aluno['tasks'] as &$task) {
-                if ($task['nomeTask'] === $nomeTask) {
-                    $task['horas'] += $horas;
-                    $task['minutos'] += $minutos;
-                    $taskExists = true;
-                    break;
-                }
-            }
-            
-            if (!$taskExists) {
-                $aluno['tasks'][] = [
-                    'nomeTask' => $nomeTask,
-                    'horas' => $horas,
-                    'minutos' => $minutos
-                ];
+
+            $aluno['tasks'][] = [
+                'nomeTask' => $nomeTask,
+                'horas' => $horas,
+                'minutos' => $minutos
+            ];
+
+            $horasTotaisEmSegundos = 0;
+            foreach ($aluno['tasks'] as $task) {
+                $horasTotaisEmSegundos += $task['horas'] * 3600 + $task['minutos'] * 60;
             }
 
-            atualizaDatabase($dirDataBase, json_encode($db));
+            $horasTotais = segundosParaHorasMinutos($horasTotaisEmSegundos);
+            $aluno['horasTotais'] = $horasTotais;
+
             break;
         }
     }
+
+    atualizaDatabase($dirDataBase, json_encode($db));
+}
+
+function visualizarTasks($nomeAluno, $db){
+    foreach($db['alunos'] as $aluno){
+        if($aluno['nome'] == $nomeAluno){
+
+            if(is_null($aluno['tasks'])){
+                echo "\n-- O aluno não realizou tasks --\n";
+
+            }else{
+                for($i = 0; $i < count($aluno['tasks']); $i++){
+                    $horasTask = $aluno['tasks'][$i]['horas'] * 3600 + $aluno['tasks'][$i]['minutos'] * 60;
+                    echo "\n----------------\n";
+                    echo "$i - ".$aluno['tasks'][$i]['nomeTask']."\n";
+                    echo segundosParaHorasMinutos($horasTask)."\n";
+                    echo "----------------\n";
+                }
+            }
+
+            return;
+        }
+    }
+    
+    echo "\n-- ESSE ALUNO NÃO ESTÁ CADASTRADO NA BASE DE DADOS --\n";
+}
+
+function segundosParaHorasMinutos($segundos) {
+    $horas = floor($segundos / 3600);
+    $segundos %= 3600;
+    $minutos = floor($segundos / 60);
+
+    return "{$horas} horas e {$minutos} minutos";
 }

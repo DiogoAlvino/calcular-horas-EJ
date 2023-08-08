@@ -46,19 +46,23 @@ if (file_exists($db)) {
             atualizaDatabase($db, json_encode($allAlunos));
         
         }else if($optionSelected == 2){
-            infoAluno($allAlunos);
+            infoAlunos($allAlunos);
         
         }else if($optionSelected == 3){
             $nomeAluno = readline(">> Para buscar informações de um aluno, digite o nome: ");
             $infoAluno = buscaAluno($nomeAluno, $allAlunos);
 
             if($infoAluno){
-                echo "----------------\n";
+                echo "\n----------------\n";
                 echo ">> Nome: ".$infoAluno['nome']."\n";
-                echo ">> Horas Totais: ".$infoAluno['horasTotais']."\n";
+                if(is_null($infoAluno['horasTotais'])){
+                    echo ">> Horas Totais: 0\n";
+                }else{
+                    echo ">> Horas Totais: ".$infoAluno['horasTotais']."\n";
+                }
                 echo "----------------\n";
             }else{
-                echo "-- ESSE ALUNO NÃO ESTÁ CADASTRADO NA BASE DE DADOS --";
+                echo "\n-- ESSE ALUNO NÃO ESTÁ CADASTRADO NA BASE DE DADOS --\n";
             }
         
         }else if($optionSelected == 4){
@@ -68,10 +72,14 @@ if (file_exists($db)) {
             $minutos = (int)readline(">> Digite os minutos para fazer a task: ");
         
             adicionarTask($nomeAluno, $nomeTask, $horas, $minutos, $allAlunos);
-        }
-        /*}else{
+
+        }else if($optionSelected == 5){
+            $nomeAluno = readline(">> Para visualizar as tasks de um aluno, digite o nome: ");
+            visualizarTasks($nomeAluno, $allAlunos);
+            
+        }else{
             break;
-        }*/
+        }
                 
     }
 } else {
